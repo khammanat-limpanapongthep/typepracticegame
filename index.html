@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Type Monkey — Canvas</title>
+<title>type practice</title>
 
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
@@ -28,19 +28,25 @@
     padding:16px; position:relative;
   }
   .row{display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between}
-  .title{font-weight:800}
+  .title{font-weight:800; text-transform:lowercase}
   .badge{font-size:12px; color:var(--muted); background:#0b131f; border:1px solid #1b2a3e; border-radius:999px; padding:6px 10px}
   .hud{display:flex; gap:10px; flex-wrap:wrap}
   .stat{background:#0b131f; border:1px solid #1b2a3e; padding:8px 10px; border-radius:10px; min-width:88px; text-align:center}
   .stat .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
   .stat .v{font-size:18px; font-weight:700; margin-top:2px}
-  .controls{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .controls{display:flex; gap:8px; margin-top:10px; flex-wrap:wrap; align-items:center}
   /* base buttons (top controls) */
   button{background:#0b131f; border:1px solid #1b2a3e; color:var(--ink); padding:8px 12px; border-radius:10px; cursor:pointer}
   button:hover{box-shadow:0 0 0 2px #1b2a3e inset}
-  .hint{margin-top:8px; color:var(--muted); font-size:12px}
+  .spacer{flex:1 1 auto}
   canvas.stage{display:block; width:100%; height:420px; border-radius:12px; background:#0d1623; border:1px solid #1c2a3f}
   #sink{position:absolute; left:-9999px; top:-9999px; opacity:0; width:0; height:0; caret-color:transparent}
+
+  /* segmented timer */
+  .seg{display:inline-flex; background:#0b131f; border:1px solid #1b2a3e; border-radius:12px; overflow:hidden}
+  .seg button{border:0; background:transparent; padding:8px 10px; border-right:1px solid #1b2a3e; border-radius:0}
+  .seg button:last-child{border-right:0}
+  .seg button.is-active{background:#0f1a2a; color:#fff}
 
   /* custom text modal */
   .overlay{position:absolute; inset:0; display:none; align-items:center; justify-content:center;
@@ -66,30 +72,15 @@
   .kv .v{font-weight:700; font-size:18px; margin-top:2px}
   .chart{width:100%; height:240px; border:1px solid #1b2a3e; border-radius:10px; background:#0b131f}
 
-  /* centered, flat results buttons (same color as panel, no shade) */
+  /* centered, flat results buttons */
   .res-actions{
-    grid-column:1 / -1;    /* span both grid columns */
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    gap:14px;
-    flex-wrap:nowrap;      /* keep in one row */
-    width:100%;
-    margin-top:6px;
+    grid-column:1 / -1;
+    display:flex; justify-content:center; align-items:center; gap:14px; flex-wrap:nowrap; width:100%; margin-top:6px;
   }
   .res-actions button{
-    appearance:none;
-    background:var(--panel); /* matches container */
-    color:var(--ink);
-    padding:10px 16px;
-    border-radius:12px;
-    border:1px solid #1b2a3e;
-    box-shadow:none;         /* no shadow */
-    font-weight:600;
-    letter-spacing:.2px;
-    cursor:pointer;
-    transition:border-color .15s ease, transform .12s ease;
-    flex:0 0 auto;
+    appearance:none; background:var(--panel); color:var(--ink); padding:10px 16px; border-radius:12px;
+    border:1px solid #1b2a3e; box-shadow:none; font-weight:600; letter-spacing:.2px; cursor:pointer;
+    transition:border-color .15s ease, transform .12s ease; flex:0 0 auto;
   }
   .res-actions button:hover{border-color:#2a3d58; transform:translateY(-1px)}
   .res-actions button:active{transform:none}
@@ -100,7 +91,7 @@
   <div class="app" id="app">
     <div class="row">
       <div style="display:flex; align-items:center; gap:10px">
-        <div class="title">🧠🐒 Type Monkey — Canvas</div>
+        <div class="title">type practice</div>
         <span class="badge">words: <b id="wordCount">50</b></span>
         <span class="badge">timer: <b id="timerBadge">30s</b></span>
       </div>
@@ -113,15 +104,20 @@
 
     <!-- TYPING VIEW -->
     <canvas id="stage" class="stage" width="1600" height="700" aria-label="typing area"></canvas>
+
     <div class="controls" id="controls">
+      <div class="seg" id="timerSeg" aria-label="timer">
+        <button type="button" data-t="15">15s</button>
+        <button type="button" data-t="30" class="is-active">30s</button>
+        <button type="button" data-t="60">60s</button>
+        <button type="button" data-t="90">90s</button>
+      </div>
+      <span class="spacer"></span>
       <button id="restart">repeat (Esc / Ctrl+R)</button>
       <button id="newText">next test (Ctrl+N)</button>
       <button id="shorter">shorter</button>
       <button id="longer">longer</button>
       <button id="custom">use my text</button>
-    </div>
-    <div class="hint" id="hint">
-      Start typing to begin. Backspace fixes mistakes. If you switch tabs, press any key or click the canvas to refocus.
     </div>
 
     <!-- CUSTOM TEXT OVERLAY -->
@@ -160,7 +156,6 @@
           <div class="label" style="margin-top:8px">Words per Minute</div>
         </div>
 
-        <!-- full-width row so we can center the buttons -->
         <div class="res-actions">
           <button id="btnRepeat">repeat test</button>
           <button id="btnNext">next test</button>
@@ -205,7 +200,7 @@
     "java and python both shine when tested with care",
     "consistency beats intensity so show up for ten minutes",
     "measure what matters wpm accuracy and calm breathing",
-    "small hands big brain type monkey never skips warmup",
+    "small hands big brain type practice never skips warmup",
     "arrays lists maps sets know your tools and use them well",
     "latency hides in loops profile before you optimize"
   ];
@@ -215,7 +210,8 @@
   const canvas = document.getElementById('stage');
   const ctx = canvas.getContext('2d');
   const resultsView = document.getElementById('results');
-  const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud'), document.getElementById('hint')];
+  const timerSeg = document.getElementById('timerSeg');
+  const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud')];
   const els = {
     wpm: document.getElementById('wpm'),
     acc: document.getElementById('acc'),
@@ -293,19 +289,45 @@
     state.cols = Math.max(8, Math.floor(innerW / state.charW));
     state.rows = Math.max(1, Math.floor(innerH / state.lineH));
   }
+
+  // --------- FIXED: word-wrapped layout with no first-word indent
   function buildLayout(){
     state.pos = new Array(state.chars.length);
     let row = 0, col = 0, i = 0;
+    const cols = state.cols;
+
     while (i < state.chars.length) {
-      if (state.chars[i] === ' ') { if (col >= state.cols){ row++; col = 0; } state.pos[i] = {row, col}; col++; i++; continue; }
-      let j = i; while (j < state.chars.length && state.chars[j] !== ' ') j++;
+      // find next word [i..j-1]
+      let j = i;
+      while (j < state.chars.length && state.chars[j] !== ' ') j++;
       const len = j - i;
-      if (col > 0 && col + len > state.cols){ row++; col = 0; }
-      for (let k=i;k<j;k++){ state.pos[k] = {row, col}; col++; }
-      if (j < state.chars.length && state.chars[j] === ' '){ if (col >= state.cols){ row++; col = 0; } state.pos[j] = {row, col}; col++; i = j+1; }
-      else { i = j; }
+      if (len === 0) { // safety
+        i++;
+        continue;
+      }
+
+      // wrap whole word if it doesn't fit (but allow at col 0)
+      if (col > 0 && col + len > cols) { row++; col = 0; }
+
+      // place the word characters
+      for (let k = i; k < j; k++) { state.pos[k] = { row, col }; col++; }
+
+      // handle trailing space WITHOUT indenting next line
+      if (j < state.chars.length && state.chars[j] === ' ') {
+        const spCol = col;
+        const spRow = row;
+        // store space at the same row; if it would overflow, put it "offscreen" at col==cols
+        state.pos[j] = { row: spRow, col: Math.min(spCol, cols) };
+
+        // advance: if space overflowed, go to new line at col 0, else increment col
+        if (spCol >= cols) { row++; col = 0; } else { col++; }
+        i = j + 1;
+      } else {
+        i = j;
+      }
     }
   }
+
   function ensureCaretVisible(){
     const rc = state.pos[state.index] || {row:0,col:0};
     const row = rc.row, bottom = state.viewRow + state.rows - 1;
@@ -323,12 +345,16 @@
       const vRow = rc.row - state.viewRow; if (vRow < 0 || vRow >= state.rows) continue;
       const x = startX + rc.col * state.charW, y = startY + vRow * state.lineH;
       const ch = state.chars[i], mark = state.marks[i] || 0;
+
+      // don't render spaces that land at column 0 or that were placed "offscreen"
+      if (ch === ' ' && (rc.col === 0 || rc.col >= state.cols)) continue;
+
       if (mark === 1) ctx.fillStyle = COLORS.correct;
       else if (mark === -1) ctx.fillStyle = COLORS.wrong;
       else ctx.fillStyle = COLORS.ink;
       ctx.fillText(ch, x, y);
     }
-    // caret
+    // caret (blinking)
     if (Math.floor(Date.now()/500) % 2 === 0) {
       const rc = state.pos[state.index];
       if (rc){
@@ -560,6 +586,21 @@
   });
   app.addEventListener('pointerdown', () => {
     if (!els.overlay.classList.contains('show') && !resultsView.classList.contains('show')) focusSink();
+  });
+
+  // ---------- timer selector ----------
+  timerSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-t]');
+    if (!b) return;
+    const t = parseInt(b.dataset.t, 10);
+    if (Number.isFinite(t)) {
+      for (const x of timerSeg.querySelectorAll('button')) x.classList.remove('is-active');
+      b.classList.add('is-active');
+      timerSeconds = t;
+      els.timerBadge.textContent = `${t}s`;
+      reset(false);
+      syncURL();
+    }
   });
 
   // ---------- wire ----------
