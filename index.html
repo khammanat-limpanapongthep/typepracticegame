@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Type Monkey — Canvas</title>
+
+<!-- JetBrains Mono for Monkeytype feel -->
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --bg:#0b0f14; --panel:#111823; --ink:#e8f0ff; --muted:#9bb0c9;
+    --accent:#5ee397; --accent-2:#ffd166; --bad:#ff6b6b; --good:#7cffc4;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:radial-gradient(80vmax 80vmax at 80% -10%, #1a2433 0%, #0b0f14 55%);
+    color:var(--ink); font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Cantarell,Noto Sans,Arial;
+    display:grid; place-items:center; padding:18px;
+  }
+  .app{
+    width:min(980px,96vw);
+    background:linear-gradient(180deg,#101621,#0d1420);
+    border:1px solid #1d2a3b; border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.03);
+    padding:16px;
+  }
+  .row{display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:space-between}
+  .title{font-weight:800}
+  .badge{font-size:12px; color:var(--muted); background:#0b131f; border:1px solid #1b2a3e; border-radius:999px; padding:6px 10px}
+  .hud{display:flex; gap:10px; flex-wrap:wrap}
+  .stat{background:#0b131f; border:1px solid #1b2a3e; padding:8px 10px; border-radius:10px; min-width:88px; text-align:center}
+  .stat .l{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.6px}
+  .stat .v{font-size:18px; font-weight:700; margin-top:2px}
+  .controls{display:flex; gap:8px; margin-top:10px}
+  button{background:#0b131f; border:1px solid #1b2a3e; color:var(--ink); padding:8px 12px; border-radius:10px; cursor:pointer}
+  button:hover{box-shadow:0 0 0 2px #1b2a3e inset}
+  .hint{margin-top:8px; color:var(--muted); font-size:12px}
+  canvas{display:block; width:100%; height:420px; border-radius:12px; background:#0d1623; border:1px solid #1c2a3f}
+  /* hidden input to capture IME/backspace reliably */
+  #sink{position:absolute; left:-9999px; top:-9999px; opacity:0; width:0; height:0; caret-color:transparent}
+</style>
+</head>
+<body>
+  <div class="app">
+    <div class="row">
+      <div style="display:flex; align-items:center; gap:10px">
+        <div class="title">🧠🐒 Type Monkey — Canvas</div>
+        <span class="badge">words: <b id="wordCount">50</b></span>
+        <span class="badge">timer: <b id="timerBadge">60s</b></span>
+      </div>
+      <div class="hud">
+        <div class="stat"><div class="l">wpm</div><div class="v" id="wpm">0</div></div>
+        <div class="stat"><div class="l">accuracy</div><div class="v" id="acc">100%</div></div>
+        <div class="stat"><div class="l">time</div><div class="v" id="time">60.0</div></div>
+      </div>
+    </div>
+
+    <canvas id="stage" width="1600" height="700" aria-label="typing area"></canvas>
+
+    <div class="controls">
+      <button id="restart">restart (Esc / Ctrl+R)</button>
+      <button id="newText">new text (Ctrl+N)</button>
+      <button id="shorter">shorter</button>
+      <button id="longer">longer</button>
+    </div>
+    <div class="hint">
+      Start typing to begin. Backspace fixes mistakes. Shortcuts: <b>Esc</b> to restart, or hold <b>Ctrl/⌘/Alt</b> + <b>R</b> to restart, <b>N</b> for new text. Plain <b>r</b>/<b>n</b> are ignored while typing.
+    </div>
+  </div>
+  <input id="sink" autocomplete="off" autocapitalize="off" spellcheck="false" />
+
+<script>
+(() => {
+  // ---------- Monkeytype-like metrics ----------
+  const FONT_FAMILY = "'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace";
+  const FONT_SIZE = 28;               // px
+  const LETTER_SPACING = 1;           // px between glyph slots
+  const LINE_HEIGHT_FACTOR = 1.7;     // ~170% line height
+
+  const CARET_COLOR = "#e2b714";      // Monkeytype yellow
+  const CARET_THICKNESS = 2;          // px at 1x DPR
+  const CARET_TOP = 0.15;             // 15% from top
+  const CARET_HEIGHT = 0.78;          // 78% of font size
+
+  // ---------- other config ----------
+  const TIMER_LEN = 60;               // seconds default
+  const WORD_GOAL_DEFAULT = 50;
+
+  const COLORS = {
+    bg: "#0d1623",
+    ink: "#9bb0c9",       // pending
+    correct: "#e8f0ff",   // typed-correct (subtle)
+    wrong: "#ff6b6b",     // typed-wrong
+    caret: CARET_COLOR
+  };
+
+  const SAMPLES = [
+    "monkeys type better when coffee is near and bugs run away",
+    "practice every day and tiny gains stack into big jumps",
+    "focus on accuracy then the speed will arrive on its own",
+    "clean code reads like prose and bends without breaking",
+    "java and python both shine when tested with care",
+    "consistency beats intensity so show up for ten minutes",
+    "measure what matters wpm accuracy and calm breathing",
+    "small hands big brain type monkey never skips warmup",
+    "arrays lists maps sets know your tools and use them well",
+    "latency hides in loops profile before you optimize"
+  ];
+
+  // ---------- elements ----------
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const els = {
+    wpm: document.getElementById('wpm'),
+    acc: document.getElementById('acc'),
+    time: document.getElementById('time'),
+    wordCount: document.getElementById('wordCount'),
+    timerBadge: document.getElementById('timerBadge'),
+    restart: document.getElementById('restart'),
+    newText: document.getElementById('newText'),
+    shorter: document.getElementById('shorter'),
+    longer: document.getElementById('longer'),
+    sink: document.getElementById('sink')
+  };
+
+  // ---------- state ----------
+  const params = new URLSearchParams(location.search);
+  let wordsTarget = clamp(parseInt(params.get('w')) || WORD_GOAL_DEFAULT, 5, 200);
+  let timerSeconds = clamp(parseInt(params.get('t')) || TIMER_LEN, 15, 300);
+
+  let state = {
+    text: "",
+    chars: [],
+    marks: [],      // 0=pending, 1=correct, -1=wrong
+    index: 0,
+    started: false,
+    startTimeMs: 0,
+    remaining: timerSeconds,
+    timerId: null,
+    // layout
+    dpr: 1,
+    cols: 0,
+    rows: 0,
+    charW: 0,
+    lineH: 0,
+    viewRow: 0
+  };
+
+  // ---------- helpers ----------
+  function clamp(n,a,b){return Math.max(a,Math.min(b,n));}
+  function pickText(wordGoal){
+    const words = [];
+    while(words.length < wordGoal){
+      const w = SAMPLES[Math.floor(Math.random()*SAMPLES.length)].split(/\s+/);
+      words.push(...w);
+    }
+    return words.slice(0, wordGoal).join(' ');
+  }
+  function setFont(){
+    ctx.font = `${FONT_SIZE * state.dpr}px ${FONT_FAMILY}`;
+    ctx.textBaseline = "top";
+  }
+  function measure(){
+    // DPR scaling
+    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    state.dpr = dpr;
+
+    // match CSS size
+    const cssW = canvas.clientWidth;
+    const cssH = canvas.clientHeight;
+    canvas.width  = Math.floor(cssW * dpr);
+    canvas.height = Math.floor(cssH * dpr);
+
+    setFont();
+    // use '0' width as base, add manual tracking
+    state.charW = Math.round(ctx.measureText("0").width) + Math.round(LETTER_SPACING * dpr);
+    state.lineH = Math.round(FONT_SIZE * LINE_HEIGHT_FACTOR * dpr);
+
+    const innerW = canvas.width  - 48 * dpr;  // padding * 2
+    const innerH = canvas.height - 48 * dpr;
+    state.cols = Math.max(1, Math.floor(innerW / state.charW));
+    state.rows = Math.max(1, Math.floor(innerH / state.lineH));
+  }
+  function layoutIndexToRC(i){
+    const col = i % state.cols;
+    const row = Math.floor(i / state.cols);
+    return {row, col};
+  }
+  function ensureCaretVisible(){
+    const {row} = layoutIndexToRC(state.index);
+    const bottomRow = state.viewRow + state.rows - 1;
+    if (row > bottomRow) state.viewRow = row - (state.rows - 1);
+    if (row < state.viewRow) state.viewRow = row;
+    state.viewRow = Math.max(0, state.viewRow);
+  }
+
+  // ---------- rendering ----------
+  function clear(){ ctx.fillStyle = COLORS.bg; ctx.fillRect(0,0,canvas.width,canvas.height); }
+
+  function drawText(){
+    const dpr = state.dpr;
+    const pad = 24 * dpr;
+    const startX = pad;
+    const startY = pad;
+
+    // draw characters
+    for (let i = 0; i < state.chars.length; i++) {
+      const {row, col} = layoutIndexToRC(i);
+      const vRow = row - state.viewRow;
+      if (vRow < 0 || vRow >= state.rows) continue;
+
+      const x = startX + col * state.charW;
+      const y = startY + vRow * state.lineH;
+
+      const ch = state.chars[i];
+      const mark = state.marks[i] || 0;
+
+      if (mark === 1) ctx.fillStyle = COLORS.correct;
+      else if (mark === -1) ctx.fillStyle = COLORS.wrong;
+      else ctx.fillStyle = COLORS.ink;
+
+      ctx.fillText(ch, x, y);
+    }
+
+    // blinking caret
+    if (Math.floor(Date.now()/500) % 2 === 0) {
+      const {row, col} = layoutIndexToRC(state.index);
+      const vRow = row - state.viewRow;
+      if (vRow >= 0 && vRow < state.rows) {
+        const x = startX + col * state.charW;
+        const y = startY + vRow * state.lineH;
+        ctx.fillStyle = CARET_COLOR;
+        const top = Math.round(FONT_SIZE * state.dpr * CARET_TOP);
+        const h = Math.round(FONT_SIZE * state.dpr * CARET_HEIGHT);
+        ctx.fillRect(x, y + top, Math.max(1, Math.round(CARET_THICKNESS * state.dpr)), h);
+      }
+    }
+  }
+  function render(){ clear(); drawText(); requestAnimationFrame(render); }
+
+  // ---------- stats ----------
+  function recomputeStats(){
+    let c=0,w=0;
+    for (const m of state.marks) { if (m===1) c++; else if (m===-1) w++; }
+    const typed = c + w;
+    const elapsedMin = (timerSeconds - state.remaining)/60;
+    const wpm = elapsedMin>0 ? Math.max(0, Math.round((c/5)/elapsedMin)) : 0;
+    const acc = typed>0 ? Math.round((c/typed)*100) : 100;
+    els.wpm.textContent = wpm;
+    els.acc.textContent = `${acc}%`;
+  }
+  function startTimer(){
+    if (state.started) return;
+    state.started = true;
+    state.startTimeMs = performance.now();
+    state.timerId = setInterval(() => {
+      state.remaining = Math.max(0, state.remaining - 0.1);
+      els.time.textContent = state.remaining.toFixed(1);
+      if (state.remaining <= 0) finish();
+      recomputeStats();
+    }, 100);
+  }
+  function finish(){ clearInterval(state.timerId); state.timerId = null; els.sink.blur(); }
+
+  // ---------- input ----------
+  function reset(newText=true){
+    clearInterval(state.timerId); state.timerId = null;
+    state.started = false; state.index = 0; state.viewRow = 0;
+    state.remaining = timerSeconds; els.time.textContent = state.remaining.toFixed(1);
+
+    // keep or regenerate text
+    if (newText || !state.text) state.text = pickText(wordsTarget);
+
+    // ALWAYS rebuild chars to fit new grid and pad to full rows
+    state.chars = state.text.split('');
+    const padNeeded = state.cols ? (state.cols - (state.chars.length % state.cols)) % state.cols : 0;
+    if (padNeeded) state.chars = state.chars.concat(Array(padNeeded).fill(' '));
+
+    state.marks = new Array(state.chars.length).fill(0);
+    recomputeStats();
+    els.sink.value = "";
+    els.sink.focus();
+    ensureCaretVisible();
+  }
+
+  function handleKeydown(e){
+    const key = (e.key || "");
+    const withMod = e.ctrlKey || e.metaKey || e.altKey;
+
+    // safe shortcuts
+    if (key.toLowerCase() === 'r' && withMod) { e.preventDefault(); reset(false); return; }
+    if (key.toLowerCase() === 'n' && withMod) { e.preventDefault(); reset(true);  return; }
+    if (key === 'Escape') { e.preventDefault(); reset(false); return; }
+  }
+
+  function handleInput(e){
+    const it = e.inputType || "";
+    const data = e.data;
+
+    if (!state.started && (it === "insertText" || it === "insertCompositionText")) startTimer();
+
+    if (it === "deleteContentBackward") {
+      if (state.index > 0) {
+        state.index--;
+        state.marks[state.index] = 0;
+        ensureCaretVisible();
+        recomputeStats();
+      }
+      return;
+    }
+
+    if (it === "insertText" || it === "insertCompositionText") {
+      if (state.index >= state.chars.length) return finish();
+      const str = data ?? "";
+      for (const c of str) {
+        const expected = state.chars[state.index];
+        state.marks[state.index] = (c === expected) ? 1 : -1;
+        state.index++;
+        ensureCaretVisible();
+        if (state.index >= state.chars.length) break;
+      }
+      recomputeStats();
+      if (state.index >= state.chars.length) finish();
+      return;
+    }
+
+    if (it === "insertFromPaste" && e.data) {
+      for (const c of e.data) {
+        if (state.index >= state.chars.length) break;
+        const expected = state.chars[state.index];
+        state.marks[state.index] = (c === expected) ? 1 : -1;
+        state.index++;
+      }
+      ensureCaretVisible();
+      recomputeStats();
+      if (state.index >= state.chars.length) finish();
+    }
+  }
+
+  // ---------- wiring ----------
+  function syncURL(){
+    const url = new URL(location.href);
+    url.searchParams.set('w', wordsTarget);
+    url.searchParams.set('t', timerSeconds);
+    history.replaceState({}, '', url);
+  }
+
+  els.restart.addEventListener('click', () => reset(false));
+  els.newText.addEventListener('click', () => reset(true));
+  els.shorter.addEventListener('click', () => { wordsTarget = clamp(wordsTarget-5, 5, 200); els.wordCount.textContent = wordsTarget; reset(true); syncURL(); });
+  els.longer.addEventListener('click', () => { wordsTarget = clamp(wordsTarget+5, 5, 200); els.wordCount.textContent = wordsTarget; reset(true); syncURL(); });
+
+  document.addEventListener('keydown', handleKeydown);
+  els.sink.addEventListener('input', handleInput);
+  window.addEventListener('resize', () => { measure(); reset(false); });mea
+
+  // ---------- init ----------
+  els.wordCount.textContent = wordsTarget;
+  els.timerBadge.textContent = `${timerSeconds}s`;
+
+  measure();
+  state.text = pickText(wordsTarget);
+  reset(false); // build grid + marks from existing text
+  els.time.textContent = timerSeconds.toFixed(1);
+  els.sink.focus();
+
+  requestAnimationFrame(render);
+})();
+</script>
+</body>
+</html>
