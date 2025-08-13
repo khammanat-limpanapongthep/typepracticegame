@@ -1,4 +1,4 @@
-# type practice (vibe code)
+# type practice
 
 A lightweight, Monkeytype-style typing trainer rendered on **HTML5 Canvas**.  
 No frameworks. No build step. Just open the file and type.  
