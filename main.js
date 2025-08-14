@@ -29,7 +29,16 @@ window.addEventListener('DOMContentLoaded', () => {
     caret: CARET_COLOR
   };
   let COLORS = COLORS_DARK;
-  // sample texts loaded from samples.js
+  // sample text pools
+  const SAMPLE_POOLS = {
+    main: typeof SAMPLES !== 'undefined' ? SAMPLES : [],
+    B1: typeof B1_SAMPLES !== 'undefined' ? B1_SAMPLES : [],
+    B2: typeof B2_SAMPLES !== 'undefined' ? B2_SAMPLES : [],
+    C1: typeof C1_SAMPLES !== 'undefined' ? C1_SAMPLES : [],
+    C2: typeof C2_SAMPLES !== 'undefined' ? C2_SAMPLES : []
+  };
+  let currentSampleKey = 'main';
+  let SAMPLE_POOL = SAMPLE_POOLS[currentSampleKey];
 
   // ---------- elements ----------
   const app = document.getElementById('app');
@@ -37,6 +46,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const resultsView = document.getElementById('results');
   const timerSeg = document.getElementById('timerSeg');
+  const sampleSeg = document.getElementById('sampleSeg');
   const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud')];
   const els = {
     wpm: document.getElementById('wpm'),
@@ -93,6 +103,14 @@ window.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(location.search);
   let wordsTarget = clamp(parseInt(params.get('w')) || WORD_GOAL_DEFAULT, 5, 200);
   let timerSeconds = clamp(parseInt(params.get('t')) || TIMER_LEN, 15, 300);
+  const sampleParam = params.get('s') || 'main';
+  if (SAMPLE_POOLS[sampleParam] && SAMPLE_POOLS[sampleParam].length) {
+    SAMPLE_POOL = SAMPLE_POOLS[sampleParam];
+    currentSampleKey = sampleParam;
+    for (const x of sampleSeg.querySelectorAll('button')) x.classList.remove('is-active');
+    const btn = sampleSeg.querySelector(`button[data-sample="${sampleParam}"]`);
+    if (btn) btn.classList.add('is-active');
+  }
 
   let state = {
     text: "",
@@ -117,7 +135,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function pickText(wordGoal){
     const words = [];
     while(words.length < wordGoal){
-      const w = SAMPLES[Math.floor(Math.random()*SAMPLES.length)].split(/\s+/);
+      const w = SAMPLE_POOL[Math.floor(Math.random()*SAMPLE_POOL.length)].split(/\s+/);
       words.push(...w);
     }
     return words.slice(0, wordGoal).join(' ');
@@ -456,11 +474,28 @@ window.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // ---------- sample pool selector ----------
+  sampleSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-sample]');
+    if (!b) return;
+    const key = b.dataset.sample;
+    const pool = SAMPLE_POOLS[key];
+    if (pool && pool.length) {
+      for (const x of sampleSeg.querySelectorAll('button')) x.classList.remove('is-active');
+      b.classList.add('is-active');
+      SAMPLE_POOL = pool;
+      currentSampleKey = key;
+      reset(true);
+      syncURL();
+    }
+  });
+
   // ---------- wire ----------
   function syncURL(){
     const url = new URL(location.href);
     url.searchParams.set('w', wordsTarget);
     url.searchParams.set('t', timerSeconds);
+    url.searchParams.set('s', currentSampleKey);
     history.replaceState({}, '', url);
   }
 
@@ -482,12 +517,13 @@ window.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', () => { measure(); buildLayout(); ensureCaretVisible(); });
 
   // ---------- init ----------
-  els.wordCount.textContent = WORD_GOAL_DEFAULT;
+  els.wordCount.textContent = wordsTarget;
   els.timerBadge.textContent = `${timerSeconds}s`;
 
   measure();
   state.text = pickText(wordsTarget);
   reset(false);
+  syncURL();
   els.time.textContent = timerSeconds.toFixed(1);
   focusSink();
 
