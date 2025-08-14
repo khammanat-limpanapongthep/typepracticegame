@@ -39,6 +39,14 @@ No frameworks. No build step. Just open the file and type.
 > # then open http://localhost:5173
 > ```
 
+## File structure
+
+```
+index.html  - main HTML entry point
+styles.css  - presentation styles
+main.js     - application logic
+```
+
 ---
 
 ## Deploy on Vercel
