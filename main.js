@@ -20,14 +20,18 @@ window.addEventListener('DOMContentLoaded', () => {
       ink: "#9bb0c9",
       correct: "#7cffc4",
       wrong: "#ff6b6b",
-      caret: CARET_COLOR
+      caret: CARET_COLOR,
+      chartBg: "#0d1623",
+      chartGrid: "#223148"
     },
     light: {
       bg: "#ffffff",
       ink: "#243b53",
       correct: "#3ba776",
       wrong: "#ff6b6b",
-      caret: CARET_COLOR
+      caret: CARET_COLOR,
+      chartBg: "#ffffff",
+      chartGrid: "#cfd8e6"
     }
   };
 
@@ -402,9 +406,9 @@ window.addEventListener('DOMContentLoaded', () => {
     const c = els.resChart, g = c.getContext('2d');
     const W = c.width, H = c.height;
     g.clearRect(0,0,W,H);
-    g.fillStyle = "#0d1623"; g.fillRect(0,0,W,H);
+    g.fillStyle = COLORS.chartBg; g.fillRect(0,0,W,H);
     // grid
-    g.strokeStyle = "#223148"; g.lineWidth = 1;
+    g.strokeStyle = COLORS.chartGrid; g.lineWidth = 1;
     g.beginPath(); for (let x=40; x<W; x+=60){ g.moveTo(x,20); g.lineTo(x,H-30); } g.stroke();
     g.beginPath(); for (let y=20; y<H-30; y+=30){ g.moveTo(40,y); g.lineTo(W-10,y); } g.stroke();
 
@@ -475,6 +479,7 @@ window.addEventListener('DOMContentLoaded', () => {
     COLORS = { ...THEMES[theme] };
     localStorage.setItem('theme', theme);
     currentTheme = theme;
+    drawResultChart();
   }
 
   els.restart.addEventListener('click', () => reset(false));     // repeat
