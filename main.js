@@ -14,13 +14,25 @@ window.addEventListener('DOMContentLoaded', () => {
   const TIMER_LEN = 30; // default 30s
   const WORD_GOAL_DEFAULT = 50;
 
-  const COLORS = {
-    bg: "#0d1623",
-    ink: "#9bb0c9",
-    correct: "#7cffc4",
-    wrong: "#ff6b6b",
-    caret: CARET_COLOR
+  const THEMES = {
+    dark: {
+      bg: "#0d1623",
+      ink: "#9bb0c9",
+      correct: "#7cffc4",
+      wrong: "#ff6b6b",
+      caret: CARET_COLOR
+    },
+    light: {
+      bg: "#ffffff",
+      ink: "#243b53",
+      correct: "#3ba776",
+      wrong: "#ff6b6b",
+      caret: CARET_COLOR
+    }
   };
+
+  let currentTheme = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+  let COLORS = { ...THEMES[currentTheme] };
 
   const SAMPLES = [
     "monkeys type better when coffee is near and bugs run away",
@@ -80,7 +92,8 @@ window.addEventListener('DOMContentLoaded', () => {
     btnRepeat: document.getElementById('btnRepeat'),
     btnNext: document.getElementById('btnNext'),
     btnOwn: document.getElementById('btnOwn'),
-    sink: document.getElementById('sink')
+    sink: document.getElementById('sink'),
+    themeToggle: document.getElementById('themeToggle')
   };
 
   // ---------- state ----------
@@ -457,6 +470,13 @@ window.addEventListener('DOMContentLoaded', () => {
     history.replaceState({}, '', url);
   }
 
+  function applyTheme(theme){
+    document.documentElement.classList.toggle('light', theme === 'light');
+    COLORS = { ...THEMES[theme] };
+    localStorage.setItem('theme', theme);
+    currentTheme = theme;
+  }
+
   els.restart.addEventListener('click', () => reset(false));     // repeat
   els.newText.addEventListener('click', () => reset(true));       // next
   els.shorter.addEventListener('click', () => { wordsTarget = clamp(wordsTarget-5, 5, 200); els.wordCount.textContent = wordsTarget; reset(true); syncURL(); });
@@ -469,6 +489,9 @@ window.addEventListener('DOMContentLoaded', () => {
   els.btnRepeat.addEventListener('click', () => { hideResultsPage(); reset(false); });
   els.btnNext.addEventListener('click',   () => { hideResultsPage(); reset(true);  });
   els.btnOwn.addEventListener('click',    () => { hideResultsPage(); showOverlay(); });
+  els.themeToggle.addEventListener('change', () => {
+    applyTheme(els.themeToggle.checked ? 'light' : 'dark');
+  });
 
   document.addEventListener('keydown', handleKeydown);
   els.sink.addEventListener('input', handleInput);
@@ -477,6 +500,8 @@ window.addEventListener('DOMContentLoaded', () => {
   // ---------- init ----------
   els.wordCount.textContent = WORD_GOAL_DEFAULT;
   els.timerBadge.textContent = `${timerSeconds}s`;
+  applyTheme(currentTheme);
+  els.themeToggle.checked = currentTheme === 'light';
 
   measure();
   state.text = pickText(wordsTarget);
