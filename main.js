@@ -29,7 +29,14 @@ window.addEventListener('DOMContentLoaded', () => {
     caret: CARET_COLOR
   };
   let COLORS = COLORS_DARK;
-  // sample texts loaded from samples.js
+  // sample texts loaded from B1.js, B2.js, C1.js, and C2.js
+  const SAMPLE_POOLS = {
+    B1: typeof SAMPLES !== 'undefined' ? SAMPLES : [],
+    B2: typeof B2_SAMPLES !== 'undefined' ? B2_SAMPLES : [],
+    C1: typeof C1_SAMPLES !== 'undefined' ? C1_SAMPLES : [],
+    C2: typeof C2_SAMPLES !== 'undefined' ? C2_SAMPLES : []
+  };
+  let activeSamples = SAMPLE_POOLS.B1;
 
   // ---------- elements ----------
   const app = document.getElementById('app');
@@ -37,6 +44,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const resultsView = document.getElementById('results');
   const timerSeg = document.getElementById('timerSeg');
+  const sampleSeg = document.getElementById('sampleSeg');
   const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud')];
   const els = {
     wpm: document.getElementById('wpm'),
@@ -117,7 +125,8 @@ window.addEventListener('DOMContentLoaded', () => {
   function pickText(wordGoal){
     const words = [];
     while(words.length < wordGoal){
-      const w = SAMPLES[Math.floor(Math.random()*SAMPLES.length)].split(/\s+/);
+      const pool = activeSamples;
+      const w = pool[Math.floor(Math.random() * pool.length)].split(/\s+/);
       words.push(...w);
     }
     return words.slice(0, wordGoal).join(' ');
@@ -454,6 +463,17 @@ window.addEventListener('DOMContentLoaded', () => {
       reset(false);
       syncURL();
     }
+  });
+
+  // ---------- sample pool selector ----------
+  sampleSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-pool]');
+    if (!b) return;
+    for (const x of sampleSeg.querySelectorAll('button')) x.classList.remove('is-active');
+    b.classList.add('is-active');
+    const key = b.dataset.pool;
+    activeSamples = SAMPLE_POOLS[key] || SAMPLE_POOLS.B1;
+    reset(false);
   });
 
   // ---------- wire ----------

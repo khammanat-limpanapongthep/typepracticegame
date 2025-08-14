@@ -30,6 +30,12 @@
     <canvas id="stage" class="stage" width="1600" height="700" aria-label="typing area"></canvas>
 
     <div class="controls" id="controls">
+      <div class="seg" id="sampleSeg" aria-label="sample pools">
+        <button type="button" data-pool="B1" class="is-active">B1</button>
+        <button type="button" data-pool="B2">B2</button>
+        <button type="button" data-pool="C1">C1</button>
+        <button type="button" data-pool="C2">C2</button>
+      </div>
       <div class="seg" id="timerSeg" aria-label="timer">
         <button type="button" data-t="15">15s</button>
         <button type="button" data-t="30" class="is-active">30s</button>
@@ -90,7 +96,10 @@
   </div>
 
   <input id="sink" autocomplete="off" autocapitalize="off" spellcheck="false" />
-  <script src="samples.js"></script>
+  <script src="B1.js"></script>
+  <script src="B2.js"></script>
+  <script src="C1.js"></script>
+  <script src="C2.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
