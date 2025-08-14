@@ -76,3 +76,36 @@ canvas.stage{display:block; width:100%; height:420px; border-radius:12px; backgr
 .res-actions button:active{transform:none}
 .res-actions button:focus-visible{outline:none; border-color:var(--yellow)}
 
+/* light theme */
+body.light{
+  --ink:#0b0f14;
+  --muted:#445161;
+  background:radial-gradient(80vmax 80vmax at 80% -10%, #f0f4fa 0%, #ffffff 55%);
+  color:var(--ink);
+}
+body.light .app{
+  background:linear-gradient(180deg,#ffffff,#f0f4fa);
+  border:1px solid #d0d7e2;
+  box-shadow:0 10px 30px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.8);
+}
+body.light .badge,
+body.light .stat,
+body.light button,
+body.light .seg,
+body.light .sheet textarea,
+body.light .chart{
+  background:#ffffff;
+  border:1px solid #d0d7e2;
+  color:var(--ink);
+}
+body.light .badge{color:var(--muted);}
+body.light button:hover,
+body.light .res-actions button:hover{box-shadow:0 0 0 2px #d0d7e2 inset; border-color:#d0d7e2;}
+body.light .seg button{border-right:1px solid #d0d7e2;}
+body.light .seg button.is-active{background:#e6eaf0; color:#000;}
+body.light canvas.stage{background:#ffffff; border:1px solid #d0d7e2;}
+body.light .sheet{background:#ffffff; border:1px solid #d0d7e2;}
+body.light .label{color:var(--muted);}
+body.light .res-actions button{background:#f6f7f9; border:1px solid #d0d7e2; color:var(--ink);}
+body.light .res-actions button:hover{border-color:#c0c8d2; transform:translateY(-1px);}
+
