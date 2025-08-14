@@ -29,7 +29,14 @@ window.addEventListener('DOMContentLoaded', () => {
     caret: CARET_COLOR
   };
   let COLORS = COLORS_DARK;
-  // sample texts loaded from samples.js
+  // sample text pools
+  let SAMPLE_POOL = typeof B1_SAMPLES !== 'undefined' ? B1_SAMPLES : [];
+  const SAMPLE_POOLS = {
+    B1: typeof B1_SAMPLES !== 'undefined' ? B1_SAMPLES : [],
+    B2: typeof B2_SAMPLES !== 'undefined' ? B2_SAMPLES : [],
+    C1: typeof C1_SAMPLES !== 'undefined' ? C1_SAMPLES : [],
+    C2: typeof C2_SAMPLES !== 'undefined' ? C2_SAMPLES : []
+  };
 
   // ---------- elements ----------
   const app = document.getElementById('app');
@@ -37,6 +44,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const resultsView = document.getElementById('results');
   const timerSeg = document.getElementById('timerSeg');
+  const sampleSeg = document.getElementById('sampleSeg');
   const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud')];
   const els = {
     wpm: document.getElementById('wpm'),
@@ -117,7 +125,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function pickText(wordGoal){
     const words = [];
     while(words.length < wordGoal){
-      const w = SAMPLES[Math.floor(Math.random()*SAMPLES.length)].split(/\s+/);
+      const w = SAMPLE_POOL[Math.floor(Math.random()*SAMPLE_POOL.length)].split(/\s+/);
       words.push(...w);
     }
     return words.slice(0, wordGoal).join(' ');
@@ -453,6 +461,20 @@ window.addEventListener('DOMContentLoaded', () => {
       els.timerBadge.textContent = `${t}s`;
       reset(false);
       syncURL();
+    }
+  });
+
+  // ---------- sample pool selector ----------
+  sampleSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-sample]');
+    if (!b) return;
+    const key = b.dataset.sample;
+    const pool = SAMPLE_POOLS[key];
+    if (pool && pool.length) {
+      for (const x of sampleSeg.querySelectorAll('button')) x.classList.remove('is-active');
+      b.classList.add('is-active');
+      SAMPLE_POOL = pool;
+      reset(true);
     }
   });
 
