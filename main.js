@@ -93,6 +93,7 @@ window.addEventListener('DOMContentLoaded', () => {
     chars: [],
     marks: [],      // 0=pending, 1=correct, -1=wrong
     index: 0,
+    errors: 0,      // total wrong keypresses, even if corrected
     started: false,
     startTimeMs: 0,       // first keystroke time
     remaining: timerSeconds,
@@ -219,7 +220,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let correct=0, wrong=0;
     for (const m of state.marks){ if (m===1) correct++; else if (m===-1) wrong++; }
     const typed = correct + wrong;
-    const total = state.chars.length;
+    const total = correct + state.errors;
     const tmin = elapsedMinutes();
     const wpm = tmin>0 ? (correct/5) / tmin : 0;        // correct-only WPM
     const raw = tmin>0 ? (typed/5) / tmin : 0;          // gross WPM
@@ -264,7 +265,7 @@ window.addEventListener('DOMContentLoaded', () => {
   // ---------- input / control ----------
   function reset(newText=true){
     clearInterval(state.timerId); state.timerId = null;
-    state.started = false; state.index = 0; state.viewRow = 0;
+    state.started = false; state.index = 0; state.viewRow = 0; state.errors = 0;
     state.remaining = timerSeconds;
     els.time.textContent = state.remaining.toFixed(1);
 
@@ -312,7 +313,9 @@ window.addEventListener('DOMContentLoaded', () => {
       const str = data ?? "";
       for (const c of str){
         const expected = state.chars[state.index];
-        state.marks[state.index] = (c === expected) ? 1 : -1;
+        const ok = (c === expected);
+        state.marks[state.index] = ok ? 1 : -1;
+        if (!ok) state.errors++;
         state.index++; state.lastTypeAt = performance.now();
         ensureCaretVisible();
         if (state.index >= state.chars.length) break;
@@ -326,7 +329,9 @@ window.addEventListener('DOMContentLoaded', () => {
       for (const c of e.data){
         if (state.index >= state.chars.length) break;
         const expected = state.chars[state.index];
-        state.marks[state.index] = (c === expected) ? 1 : -1;
+        const ok = (c === expected);
+        state.marks[state.index] = ok ? 1 : -1;
+        if (!ok) state.errors++;
         state.index++; state.lastTypeAt = performance.now();
       }
       ensureCaretVisible(); recomputeStats();
