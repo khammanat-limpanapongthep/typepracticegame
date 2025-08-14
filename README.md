@@ -1,45 +1,61 @@
-# type practice
+# Type Practice Game
 
-A lightweight, Monkeytype-style typing trainer rendered on **HTML5 Canvas**.  
-No frameworks. No build step. Just open the file and type.  
-**This project is also Vibe Code.**
+A lightweight Monkeytype-style typing trainer rendered on **HTML5 Canvas**. It runs entirely in the browser: no frameworks, no build tools—just open the `index.html` file.
 
----
+## Table of Contents
 
-## Live demo
-`https://typepracticegame.vercel.app/?w=50&t=90`
+- [Demo](#demo)
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Configuration](#configuration)
+- [File Structure](#file-structure)
+- [Deployment](#deployment)
+- [Contributing](#contributing)
+- [License](#license)
 
-> URL params:
-> - `w` = word target (e.g. `50`)
-> - `t` = timer seconds (`15`, `30`, `60`, `90`)
+## Demo
 
----
+Live example: [typepracticegame.vercel.app](https://typepracticegame.vercel.app/?w=50&t=90)
+
+URL parameters:
+
+- `w` – target word count (e.g. `50`)
+- `t` – timer length in seconds (`15`, `30`, `60`, `90`)
 
 ## Features
-- **Canvas renderer** with fixed cell grid (monospace) for crisp spacing.
-- **Word wrapping at spaces** with **first-word alignment** (no leading indent).
-- **Correct WPM**: `(correct_chars / 5) / elapsed_minutes` from *first keystroke*.
-- Raw WPM, Accuracy, simple **WPM-over-time chart**.
-- **Timer selector**: 15 / 30 / 60 / 90 (30s default).
-- **Colors**: correct = green, wrong = red, pending = muted.
-- **Paste your own text** overlay.
-- **Results screen** (full page) with actions: repeat / next / use my text.
-- **Focus recovery** after tab switch.
 
----
+- Canvas renderer with fixed cell grid for crisp monospace layout.
+- Word wrapping at spaces with first-word alignment (no leading indent).
+- Correct WPM: `(correct_chars / 5) / elapsed_minutes` starting from the first keystroke.
+- Raw WPM, Accuracy, and a WPM-over-time chart.
+- Timer selector: 15 / 30 / 60 / 90 seconds (30s default).
+- Color feedback: green for correct, red for wrong, muted for pending.
+- Paste your own text overlay.
+- Results screen with actions: repeat / next / use my text.
+- Focus recovery after tab switch.
 
-## Quick start (local)
-1. Clone or download this repo.
-2. Open `index.html` in a modern browser (Chrome / Edge / Firefox / Safari).
-3. Start typing — the timer starts on the first keystroke.
+## Quick Start
 
-> Tip: If your browser blocks local fonts or you want a URL bar, serve it:
+1. Clone or download this repository.
+2. Open `index.html` in a modern browser (Chrome, Edge, Firefox, Safari).
+3. Start typing—the timer begins on the first key press.
+
+> **Tip:** To serve the files locally with a URL bar:
+>
 > ```bash
 > python -m http.server 5173
 > # then open http://localhost:5173
 > ```
 
-## File structure
+## Configuration
+
+The app can be customized at runtime:
+
+- Use on-screen controls to change timer length or word target.
+- Press **Use my text** to practice with a custom snippet.
+- URL parameters `w` and `t` also adjust the word goal and timer.
+
+## File Structure
 
 ```
 index.html  - main HTML entry point
@@ -47,20 +63,21 @@ styles.css  - presentation styles
 main.js     - application logic
 ```
 
----
+## Deployment
 
-## Deploy on Vercel
-Already live here: `https://typepracticegame.vercel.app/?w=50&t=90`
+The app is already live at [typepracticegame.vercel.app](https://typepracticegame.vercel.app/?w=50&t=90).
 
-If you want to deploy your own:
-1. Push this repo to GitHub.
-2. In Vercel, **New Project** → import the repo.
+To deploy your own copy on Vercel:
+
+1. Push this repository to GitHub.
+2. In Vercel, choose **New Project** → import the repo.
 3. Framework preset: **Other** (no build).
 4. Build command: **None**.
-5. Output directory: **/** (root).
+5. Output directory: `/` (root).
 6. Click **Deploy**.
 
-Optional `vercel.json` (not required, but nice to have):
+Optional `vercel.json` (not required but nice to have):
+
 ```json
 {
   "cleanUrls": true,
@@ -73,3 +90,13 @@ Optional `vercel.json` (not required, but nice to have):
     }
   ]
 }
+```
+
+## Contributing
+
+Issues and pull requests are welcome. Please keep the project lightweight and framework-free.
+
+## License
+
+No license has been specified. If you plan to use this code, please contact the author.
+
