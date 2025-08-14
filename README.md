@@ -61,6 +61,7 @@ The app can be customized at runtime:
 index.html  - main HTML entry point
 styles.css  - presentation styles
 main.js     - application logic
+samples.js  - text samples
 ```
 
 ## Deployment
@@ -94,9 +95,9 @@ Optional `vercel.json` (not required but nice to have):
 
 ## Contributing
 
-Issues and pull requests are welcome. Please keep the project lightweight and framework-free.
+Issues and pull requests are welcome.
 
 ## License
 
-No license has been specified. If you plan to use this code, please contact the author.
+No license has been specified.
 
