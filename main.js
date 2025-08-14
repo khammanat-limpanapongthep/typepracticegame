@@ -14,13 +14,21 @@ window.addEventListener('DOMContentLoaded', () => {
   const TIMER_LEN = 30; // default 30s
   const WORD_GOAL_DEFAULT = 50;
 
-  const COLORS = {
+  const COLORS_DARK = {
     bg: "#0d1623",
     ink: "#9bb0c9",
     correct: "#7cffc4",
     wrong: "#ff6b6b",
     caret: CARET_COLOR
   };
+  const COLORS_LIGHT = {
+    bg: "#ffffff",
+    ink: "#445161",
+    correct: "#7cffc4",
+    wrong: "#ff6b6b",
+    caret: CARET_COLOR
+  };
+  let COLORS = COLORS_DARK;
   // sample texts loaded from samples.js
 
   // ---------- elements ----------
@@ -62,16 +70,22 @@ window.addEventListener('DOMContentLoaded', () => {
     themeToggle: document.getElementById('themeToggle')
   };
 
+  function updateColors(){
+    COLORS = document.body.classList.contains('light') ? COLORS_LIGHT : COLORS_DARK;
+  }
+
   // ---------- theme ----------
   const savedTheme = localStorage.getItem('theme');
   if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
     document.body.classList.add('light');
   }
+  updateColors();
   els.themeToggle.textContent = document.body.classList.contains('light') ? 'dark mode' : 'light mode';
   els.themeToggle.addEventListener('click', () => {
     const isLight = document.body.classList.toggle('light');
     els.themeToggle.textContent = isLight ? 'dark mode' : 'light mode';
     localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateColors();
     if (resultsView.classList.contains('show')) drawResultChart();
   });
 
