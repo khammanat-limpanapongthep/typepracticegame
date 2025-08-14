@@ -2961,7 +2961,7 @@ const SAMPLES = [
   "typically, total internal reflection occurs above a critical angle.",
   "typically, transactions ensure atomicity consistency isolation and durability!",
   "typically, transactions ensure atomicity consistency isolation and durability.",
-  "typically, triangles have interior angles summing to one hundred eighty degrees!",
+  "typically, triangles have interior angles summing to one hundred eighty degrees!", 
   "typically, triangles have interior angles summing to one hundred eighty degrees.",
   "typically, udp offers connectionless datagrams with no delivery guarantees!",
   "typically, udp offers connectionless datagrams with no delivery guarantees.",
