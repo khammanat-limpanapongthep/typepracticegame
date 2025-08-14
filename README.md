@@ -1,6 +1,7 @@
 # Type Practice Game
 
-A lightweight Monkeytype-style typing trainer rendered on **HTML5 Canvas**. It runs entirely in the browser: no frameworks, no build tools—just open the `index.html` file.
+A lightweight Monkeytype-style typing trainer built with pure HTML, CSS, and JavaScript on an HTML5 Canvas.
+Runs entirely in your browser no frameworks, no build tools. Just download and open index.html to start typing.
 
 ## Table of Contents
 
