@@ -16,10 +16,13 @@
         <span class="badge">words: <b id="wordCount">50</b></span>
         <span class="badge">timer: <b id="timerBadge">30s</b></span>
       </div>
-      <div class="hud" id="hud">
-        <div class="stat"><div class="l">wpm</div><div class="v" id="wpm">0</div></div>
-        <div class="stat"><div class="l">accuracy</div><div class="v" id="acc">100%</div></div>
-        <div class="stat"><div class="l">time</div><div class="v" id="time">30.0</div></div>
+      <div style="display:flex; align-items:center; gap:12px">
+        <div class="hud" id="hud">
+          <div class="stat"><div class="l">wpm</div><div class="v" id="wpm">0</div></div>
+          <div class="stat"><div class="l">accuracy</div><div class="v" id="acc">100%</div></div>
+          <div class="stat"><div class="l">time</div><div class="v" id="time">30.0</div></div>
+        </div>
+        <button id="themeToggle" aria-label="Toggle dark and light mode">light mode</button>
       </div>
     </div>
 
