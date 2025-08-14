@@ -32,7 +32,17 @@ window.addEventListener('DOMContentLoaded', () => {
     "measure what matters wpm accuracy and calm breathing",
     "small hands big brain type practice never skips warmup",
     "arrays lists maps sets know your tools and use them well",
-    "latency hides in loops profile before you optimize"
+    "latency hides in loops profile before you optimize",
+    "syntax errors vanish when compilers finally approve the build",
+    "memory leaks fade once references release forgotten objects",
+    "typing fast demands practice patience and quiet focus",
+    "keyboards click and clack bringing rhythm to late night code",
+    "developers debug tricky issues during silent sunrise mornings",
+    "stack overflow jokes spread quickly among weary coders",
+    "version control saves projects from chaotic copy paste wars",
+    "ship features often but refactor pieces with deliberate care",
+    "review pull requests kindly to grow teammates into experts",
+    "good naming whispers intent and prevents future confusion"
   ];
 
   // ---------- elements ----------
@@ -107,11 +117,11 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   function setFont(){ ctx.font = `${FONT_SIZE * state.dpr}px ${FONT_FAMILY}`; ctx.textBaseline = "top"; }
   function measure(){
-    const dpr = Math.max(1, Math.floor(window.devicePixelRatio || 1));
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
     state.dpr = dpr;
     const cssW = canvas.clientWidth, cssH = canvas.clientHeight;
-    canvas.width  = Math.floor(cssW * dpr);
-    canvas.height = Math.floor(cssH * dpr);
+    canvas.width  = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
     setFont();
     state.charW = Math.round(ctx.measureText("0").width) + Math.round(LETTER_SPACING * dpr);
     state.lineH = Math.round(FONT_SIZE * LINE_HEIGHT_FACTOR * dpr);
@@ -209,10 +219,11 @@ window.addEventListener('DOMContentLoaded', () => {
     let correct=0, wrong=0;
     for (const m of state.marks){ if (m===1) correct++; else if (m===-1) wrong++; }
     const typed = correct + wrong;
+    const total = state.chars.length;
     const tmin = elapsedMinutes();
     const wpm = tmin>0 ? (correct/5) / tmin : 0;        // correct-only WPM
     const raw = tmin>0 ? (typed/5) / tmin : 0;          // gross WPM
-    const acc = typed>0 ? (correct/typed)*100 : 100;
+    const acc = total>0 ? (correct/total)*100 : 100;
     els.wpm.textContent = Math.round(wpm);
     els.acc.textContent = `${Math.round(acc)}%`;
     return {correct, wrong, typed, wpm, raw, acc: Math.round(acc)};
