@@ -7,6 +7,10 @@
 
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
+<script>
+  const theme = localStorage.getItem('theme');
+  if (theme === 'light') document.documentElement.classList.add('light');
+</script>
 </head>
 <body>
   <div class="app" id="app">
@@ -16,10 +20,16 @@
         <span class="badge">words: <b id="wordCount">50</b></span>
         <span class="badge">timer: <b id="timerBadge">30s</b></span>
       </div>
-      <div class="hud" id="hud">
-        <div class="stat"><div class="l">wpm</div><div class="v" id="wpm">0</div></div>
-        <div class="stat"><div class="l">accuracy</div><div class="v" id="acc">100%</div></div>
-        <div class="stat"><div class="l">time</div><div class="v" id="time">30.0</div></div>
+      <div style="display:flex; align-items:center; gap:10px">
+        <div class="hud" id="hud">
+          <div class="stat"><div class="l">wpm</div><div class="v" id="wpm">0</div></div>
+          <div class="stat"><div class="l">accuracy</div><div class="v" id="acc">100%</div></div>
+          <div class="stat"><div class="l">time</div><div class="v" id="time">30.0</div></div>
+        </div>
+        <label class="switch" aria-label="toggle theme">
+          <input type="checkbox" id="themeToggle" />
+          <span class="slider"></span>
+        </label>
       </div>
     </div>
 
