@@ -14,6 +14,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const TIMER_LEN = 30; // default 30s
   const WORD_GOAL_DEFAULT = 50;
 
+<<<<<<< HEAD
   const THEMES = {
     dark: {
       bg: "#0d1623",
@@ -56,6 +57,31 @@ window.addEventListener('DOMContentLoaded', () => {
     "review pull requests kindly to grow teammates into experts",
     "good naming whispers intent and prevents future confusion"
   ];
+=======
+  const COLORS_DARK = {
+    bg: "#0d1623",
+    ink: "#9bb0c9",
+    correct: "#7cffc4",
+    wrong: "#ff6b6b",
+    caret: CARET_COLOR
+  };
+  const COLORS_LIGHT = {
+    bg: "#ffffff",
+    ink: "#445161",
+    correct: "#7cffc4",
+    wrong: "#ff6b6b",
+    caret: CARET_COLOR
+  };
+  let COLORS = COLORS_DARK;
+  // sample text pools
+  let SAMPLE_POOL = typeof B1_SAMPLES !== 'undefined' ? B1_SAMPLES : [];
+  const SAMPLE_POOLS = {
+    B1: typeof B1_SAMPLES !== 'undefined' ? B1_SAMPLES : [],
+    B2: typeof B2_SAMPLES !== 'undefined' ? B2_SAMPLES : [],
+    C1: typeof C1_SAMPLES !== 'undefined' ? C1_SAMPLES : [],
+    C2: typeof C2_SAMPLES !== 'undefined' ? C2_SAMPLES : []
+  };
+>>>>>>> f67667d57fcb900d1a3f43bec92bcc0feba6523a
 
   // ---------- elements ----------
   const app = document.getElementById('app');
@@ -63,6 +89,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const resultsView = document.getElementById('results');
   const timerSeg = document.getElementById('timerSeg');
+  const sampleSeg = document.getElementById('sampleSeg');
   const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud')];
   const els = {
     wpm: document.getElementById('wpm'),
@@ -96,6 +123,25 @@ window.addEventListener('DOMContentLoaded', () => {
     themeToggle: document.getElementById('themeToggle')
   };
 
+  function updateColors(){
+    COLORS = document.body.classList.contains('light') ? COLORS_LIGHT : COLORS_DARK;
+  }
+
+  // ---------- theme ----------
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+    document.body.classList.add('light');
+  }
+  updateColors();
+  els.themeToggle.textContent = document.body.classList.contains('light') ? 'dark mode' : 'light mode';
+  els.themeToggle.addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light');
+    els.themeToggle.textContent = isLight ? 'dark mode' : 'light mode';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    updateColors();
+    if (resultsView.classList.contains('show')) drawResultChart();
+  });
+
   // ---------- state ----------
   const params = new URLSearchParams(location.search);
   let wordsTarget = clamp(parseInt(params.get('w')) || WORD_GOAL_DEFAULT, 5, 200);
@@ -124,7 +170,7 @@ window.addEventListener('DOMContentLoaded', () => {
   function pickText(wordGoal){
     const words = [];
     while(words.length < wordGoal){
-      const w = SAMPLES[Math.floor(Math.random()*SAMPLES.length)].split(/\s+/);
+      const w = SAMPLE_POOL[Math.floor(Math.random()*SAMPLE_POOL.length)].split(/\s+/);
       words.push(...w);
     }
     return words.slice(0, wordGoal).join(' ');
@@ -401,10 +447,11 @@ window.addEventListener('DOMContentLoaded', () => {
   function drawResultChart(){
     const c = els.resChart, g = c.getContext('2d');
     const W = c.width, H = c.height;
+    const light = document.body.classList.contains('light');
     g.clearRect(0,0,W,H);
-    g.fillStyle = "#0d1623"; g.fillRect(0,0,W,H);
+    g.fillStyle = light ? "#ffffff" : "#0d1623"; g.fillRect(0,0,W,H);
     // grid
-    g.strokeStyle = "#223148"; g.lineWidth = 1;
+    g.strokeStyle = light ? "#d0d7e2" : "#223148"; g.lineWidth = 1;
     g.beginPath(); for (let x=40; x<W; x+=60){ g.moveTo(x,20); g.lineTo(x,H-30); } g.stroke();
     g.beginPath(); for (let y=20; y<H-30; y+=30){ g.moveTo(40,y); g.lineTo(W-10,y); } g.stroke();
 
@@ -459,6 +506,20 @@ window.addEventListener('DOMContentLoaded', () => {
       els.timerBadge.textContent = `${t}s`;
       reset(false);
       syncURL();
+    }
+  });
+
+  // ---------- sample pool selector ----------
+  sampleSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-sample]');
+    if (!b) return;
+    const key = b.dataset.sample;
+    const pool = SAMPLE_POOLS[key];
+    if (pool && pool.length) {
+      for (const x of sampleSeg.querySelectorAll('button')) x.classList.remove('is-active');
+      b.classList.add('is-active');
+      SAMPLE_POOL = pool;
+      reset(true);
     }
   });
 

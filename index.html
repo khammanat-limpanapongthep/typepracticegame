@@ -20,16 +20,24 @@
         <span class="badge">words: <b id="wordCount">50</b></span>
         <span class="badge">timer: <b id="timerBadge">30s</b></span>
       </div>
+<<<<<<< HEAD
       <div style="display:flex; align-items:center; gap:10px">
+=======
+      <div style="display:flex; align-items:center; gap:12px">
+>>>>>>> f67667d57fcb900d1a3f43bec92bcc0feba6523a
         <div class="hud" id="hud">
           <div class="stat"><div class="l">wpm</div><div class="v" id="wpm">0</div></div>
           <div class="stat"><div class="l">accuracy</div><div class="v" id="acc">100%</div></div>
           <div class="stat"><div class="l">time</div><div class="v" id="time">30.0</div></div>
         </div>
+<<<<<<< HEAD
         <label class="switch" aria-label="toggle theme">
           <input type="checkbox" id="themeToggle" />
           <span class="slider"></span>
         </label>
+=======
+        <button id="themeToggle" aria-label="Toggle dark and light mode">light mode</button>
+>>>>>>> f67667d57fcb900d1a3f43bec92bcc0feba6523a
       </div>
     </div>
 
@@ -42,6 +50,12 @@
         <button type="button" data-t="30" class="is-active">30s</button>
         <button type="button" data-t="60">60s</button>
         <button type="button" data-t="90">90s</button>
+      </div>
+      <div class="seg" id="sampleSeg" aria-label="sample pool">
+        <button type="button" data-sample="B1" class="is-active">B1</button>
+        <button type="button" data-sample="B2">B2</button>
+        <button type="button" data-sample="C1">C1</button>
+        <button type="button" data-sample="C2">C2</button>
       </div>
       <span class="spacer"></span>
       <button id="restart">repeat (Esc / Ctrl+R)</button>
@@ -97,6 +111,10 @@
   </div>
 
   <input id="sink" autocomplete="off" autocapitalize="off" spellcheck="false" />
+  <script src="B1.js"></script>
+  <script src="B2.js"></script>
+  <script src="C1.js"></script>
+  <script src="C2.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
