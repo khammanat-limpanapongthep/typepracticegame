@@ -29,7 +29,9 @@ window.addEventListener('DOMContentLoaded', () => {
     caret: CARET_COLOR
   };
   let COLORS = COLORS_DARK;
-  // sample texts loaded from samples.js
+  // sample text pools
+  const SAMPLE_POOLS = { B1: B1_SAMPLES, B2: B2_SAMPLES, C1: C1_SAMPLES, C2: C2_SAMPLES };
+  let SAMPLES = SAMPLE_POOLS.B1;
 
   // ---------- elements ----------
   const app = document.getElementById('app');
@@ -37,6 +39,7 @@ window.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const resultsView = document.getElementById('results');
   const timerSeg = document.getElementById('timerSeg');
+  const poolSeg = document.getElementById('poolSeg');
   const typingEls = [canvas, document.getElementById('controls'), document.getElementById('hud')];
   const els = {
     wpm: document.getElementById('wpm'),
@@ -453,6 +456,18 @@ window.addEventListener('DOMContentLoaded', () => {
       els.timerBadge.textContent = `${t}s`;
       reset(false);
       syncURL();
+    }
+  });
+
+  poolSeg.addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-pool]');
+    if (!b) return;
+    const p = b.dataset.pool;
+    if (p && SAMPLE_POOLS[p]) {
+      for (const x of poolSeg.querySelectorAll('button')) x.classList.remove('is-active');
+      b.classList.add('is-active');
+      SAMPLES = SAMPLE_POOLS[p];
+      reset(true);
     }
   });
 

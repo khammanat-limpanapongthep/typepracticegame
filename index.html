@@ -36,6 +36,12 @@
         <button type="button" data-t="60">60s</button>
         <button type="button" data-t="90">90s</button>
       </div>
+      <div class="seg" id="poolSeg" aria-label="sample pool">
+        <button type="button" data-pool="B1" class="is-active">B1</button>
+        <button type="button" data-pool="B2">B2</button>
+        <button type="button" data-pool="C1">C1</button>
+        <button type="button" data-pool="C2">C2</button>
+      </div>
       <span class="spacer"></span>
       <button id="restart">repeat (Esc / Ctrl+R)</button>
       <button id="newText">next test (Ctrl+N)</button>
@@ -90,8 +96,11 @@
   </div>
 
   <input id="sink" autocomplete="off" autocapitalize="off" spellcheck="false" />
-  <script src="samples.js"></script>
-  <script src="main.js"></script>
-</body>
-</html>
+    <script src="B1.js"></script>
+    <script src="B2.js"></script>
+    <script src="C1.js"></script>
+    <script src="C2.js"></script>
+    <script src="main.js"></script>
+  </body>
+  </html>
 
