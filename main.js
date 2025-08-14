@@ -1080,8 +1080,22 @@ window.addEventListener('DOMContentLoaded', () => {
     btnRepeat: document.getElementById('btnRepeat'),
     btnNext: document.getElementById('btnNext'),
     btnOwn: document.getElementById('btnOwn'),
-    sink: document.getElementById('sink')
+    sink: document.getElementById('sink'),
+    themeToggle: document.getElementById('themeToggle')
   };
+
+  // ---------- theme ----------
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light' || (!savedTheme && window.matchMedia('(prefers-color-scheme: light)').matches)) {
+    document.body.classList.add('light');
+  }
+  els.themeToggle.textContent = document.body.classList.contains('light') ? 'dark mode' : 'light mode';
+  els.themeToggle.addEventListener('click', () => {
+    const isLight = document.body.classList.toggle('light');
+    els.themeToggle.textContent = isLight ? 'dark mode' : 'light mode';
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    if (resultsView.classList.contains('show')) drawResultChart();
+  });
 
   // ---------- state ----------
   const params = new URLSearchParams(location.search);
@@ -1388,10 +1402,11 @@ window.addEventListener('DOMContentLoaded', () => {
   function drawResultChart(){
     const c = els.resChart, g = c.getContext('2d');
     const W = c.width, H = c.height;
+    const light = document.body.classList.contains('light');
     g.clearRect(0,0,W,H);
-    g.fillStyle = "#0d1623"; g.fillRect(0,0,W,H);
+    g.fillStyle = light ? "#ffffff" : "#0d1623"; g.fillRect(0,0,W,H);
     // grid
-    g.strokeStyle = "#223148"; g.lineWidth = 1;
+    g.strokeStyle = light ? "#d0d7e2" : "#223148"; g.lineWidth = 1;
     g.beginPath(); for (let x=40; x<W; x+=60){ g.moveTo(x,20); g.lineTo(x,H-30); } g.stroke();
     g.beginPath(); for (let y=20; y<H-30; y+=30){ g.moveTo(40,y); g.lineTo(W-10,y); } g.stroke();
 
