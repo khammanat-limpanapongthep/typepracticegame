@@ -16,7 +16,7 @@ Runs entirely in your browser no frameworks, no build tools. Just download and o
 
 ## Demo
 
-Live example: [typepracticegame.vercel.app](https://typepracticegame.vercel.app/?w=50&t=90)
+Live example:  [typepracticegame.vercel.app](https://typepracticegame.vercel.app/?w=50&t=90)
 
 URL parameters:
 
