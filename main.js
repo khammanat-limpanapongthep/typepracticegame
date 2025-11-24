@@ -106,6 +106,7 @@ window.addEventListener('DOMContentLoaded', () => {
     timerId: null,
     // layout
     dpr: 1, cols: 0, rows: 0, charW: 0, lineH: 0, viewRow: 0, pos: [],
+    caretX: 0, caretY: 0, caretInit: false,
     // series for graph and consistency
     samples: [], sampleSeconds: [], lastSampleSec: 0,
     lastTypeAt: 0, afkSeconds: 0
@@ -201,15 +202,25 @@ window.addEventListener('DOMContentLoaded', () => {
       else ctx.fillStyle = COLORS.ink;
       ctx.fillText(ch, x, y);
     }
-    // caret (blinking)
+    // caret (blinking with smooth travel)
     if (Math.floor(Date.now()/500) % 2 === 0) {
       const rc = state.pos[state.index];
       if (rc){
         const vRow = rc.row - state.viewRow; if (vRow>=0 && vRow<state.rows){
-          const dpr = state.dpr, pad = 24*dpr, x = pad + rc.col * state.charW, y = pad + vRow*state.lineH;
+          const targetX = pad + rc.col * state.charW;
+          const targetY = pad + vRow * state.lineH;
+
+          if (!state.caretInit){
+            state.caretX = targetX; state.caretY = targetY; state.caretInit = true;
+          } else {
+            const lerp = 0.25;
+            state.caretX += (targetX - state.caretX) * lerp;
+            state.caretY += (targetY - state.caretY) * lerp;
+          }
+
           ctx.fillStyle = CARET_COLOR;
           const top = Math.round(FONT_SIZE * dpr * CARET_TOP), h = Math.round(FONT_SIZE * dpr * CARET_HEIGHT);
-          ctx.fillRect(x, y + top, Math.max(1, Math.round(CARET_THICKNESS * dpr)), h);
+          ctx.fillRect(Math.round(state.caretX), Math.round(state.caretY) + top, Math.max(1, Math.round(CARET_THICKNESS * dpr)), h);
         }
       }
     }
@@ -279,6 +290,7 @@ window.addEventListener('DOMContentLoaded', () => {
     state.text = normalizeText(state.text);
     state.chars = state.text.split('');
     buildLayout();
+    state.caretInit = false;
     state.marks = new Array(state.chars.length).fill(0);
 
     recomputeStats();
@@ -479,7 +491,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
   document.addEventListener('keydown', handleKeydown);
   els.sink.addEventListener('input', handleInput);
-  window.addEventListener('resize', () => { measure(); buildLayout(); ensureCaretVisible(); });
+  window.addEventListener('resize', () => { measure(); buildLayout(); ensureCaretVisible(); state.caretInit = false; });
 
   // ---------- init ----------
   els.wordCount.textContent = WORD_GOAL_DEFAULT;
